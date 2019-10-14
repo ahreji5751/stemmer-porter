@@ -24,7 +24,7 @@ class StemmingController extends Controller
         $words = explode(' ', $request->text);
         $result = [];
         foreach ($words as $word) {
-            $result []= PorterStemmerRussian::getWordBase($word);
+            $result []= PorterStemmerRussian::word($word);
         }
         $russianResult = implode(' ', $result);
         return redirect('/')->with(compact('russianResult'));
