@@ -54,8 +54,8 @@
             <form action="/russian-lemmas" method="post">
                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
                 <div class="form-group">
-                    <label for="russian-lemmas-text">Enter russian text:</label>
-                    <textarea id="russian-lemmas-text" name="text" class="form-control" required></textarea>
+                    <label for="russian-lemmas-text">Enter russian word:</label>
+                    <input id="russian-lemmas-text" name="text" class="form-control" required />
                 </div>
                 <button class="btn btn-primary">Go!</button>
             </form>
@@ -64,7 +64,7 @@
             @if (session()->get('russianLemmaResult'))
                 <div class="form-group">
                     <label>Result:</label>
-                    <div>{{ session()->get('russianLemmaResult') }}</div>
+                    <div>{!! session()->get('russianLemmaResult') !!}</div>
                 </div>
             @endif
         </div>

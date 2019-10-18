@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Classes\PorterStemmerRussian;
 use Illuminate\Http\Request;
 use App\Classes\PorterStemmer;
+use cijic\phpMorphy\Facade\Morphy;
 
 class StemmingController extends Controller
 {
@@ -32,22 +33,29 @@ class StemmingController extends Controller
 
     public function getLexem(Request $request)
     {
-        $words = explode(' ', $request->text);
-        $result = [];
-        foreach ($words as $word) {
-            $result []= $this->getLexemFromDB($word);
-        }
-        $russianLemmaResult = implode(' ', $result);
-        return redirect('/')->with(compact('russianLemmaResult'));
-    }
+        $word = explode(' ', $request->text)[0];
 
-    private function getLexemFromDB($name)
-    {
-        $results = \DB::select(
-            \DB::raw("SELECT sg_entry.name FROM sg_form, sg_entry WHERE sg_form.name=:name AND sg_entry.id=sg_form.id_entry"), [
-                'name' => $name
-            ]
-        );
-        return count($results) ? $results[0]->name : 'empty';
+        $result = [];
+
+        $paradigms = Morphy::findWord(mb_strtoupper($word));
+
+        $mapGrammemsNames = config('morphy-mapper');
+
+        foreach ($paradigms as $paradigm) {
+            $result []= '-----------------' . $paradigm->getBaseForm() . '------------------';
+            foreach ($paradigm->getFoundWordForm() as $form) {
+                $grammemsString = '';
+                foreach ($form->getGrammems() as $grammem) {
+                    $grammemsString .= array_key_exists($grammem, $mapGrammemsNames) ? $mapGrammemsNames[$grammem] . ', ' : $grammem . ', ';
+                }
+                $newLine = $form->getWord() . ' - ' . $mapGrammemsNames[$form->getPartOfSpeech()] . ', ' .  $grammemsString;
+                if (!in_array($newLine, $result)) {
+                    $result []= $newLine;
+                }
+            }
+        }
+
+        $russianLemmaResult = implode('<br>', $result);
+        return redirect('/')->with(compact('russianLemmaResult'));
     }
 }
